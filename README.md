@@ -1,5 +1,7 @@
 # NASA Historical Mission Control Personnel Directory
 
+**Live Demo:** [https://apolloinrealtime.org/MOCR_directory/](https://apolloinrealtime.org/MOCR_directory/)
+
 This project is a web application designed to explore the personnel who worked in mission control for NASA missions, spanning from the Gemini program through the Space Shuttle era.
 
 It allows users to:
