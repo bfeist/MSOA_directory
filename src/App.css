@@ -392,3 +392,37 @@ header h1 {
 .filter-button:hover {
   background-color: #0a2c6b;
 }
+
+.role-item {
+  cursor: pointer;
+}
+
+.role-item:hover {
+}
+
+/* Styles for Role Details Page */
+
+/* Style for the mission list within a person card on the role page */
+.role-mission-list {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.role-mission-list p {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--primary-color);
+}
+
+.role-mission-list ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+  color: #555;
+}
+
+.role-mission-list li {
+  margin-bottom: 3px;
+}
+
+/* Reuse .people-list and .person-card styles */

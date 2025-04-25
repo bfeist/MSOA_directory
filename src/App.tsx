@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react"; // Add useMemo
 import missionData from "./data/mission_data.json";
 import "./App.css";
 
@@ -54,6 +54,12 @@ interface MissionAssignmentGroup {
 interface ShiftInfo {
   id: number;
   name: string;
+}
+
+// Type for role details
+interface RolePersonInfo {
+  person: Person;
+  missions: { mission_name: string; assignment_note: string }[]; // Include mission name
 }
 
 // Type assertion for our imported JSON
@@ -137,14 +143,68 @@ const getMissionsByPerson = (
   });
 };
 
+// Get all people who held a specific role
+const getPeopleByRole = (role: string, data: MissionData): RolePersonInfo[] => {
+  // Find all assignments matching the role (case-insensitive)
+  const roleAssignments = data.person_mission_shift.filter(
+    (pms) =>
+      pms.assignment_note.trim().toLowerCase() === role.trim().toLowerCase()
+  );
+
+  const peopleInRole = roleAssignments.reduce((acc, pms) => {
+    const personId = pms.person_id;
+    if (!acc[personId]) {
+      const person = data.person.find((p) => p.person_id === personId);
+      if (person) {
+        acc[personId] = {
+          person,
+          missions: [], // Initialize missions array
+        };
+      }
+    }
+
+    // Add the mission *only if* the person exists in the accumulator
+    if (acc[personId]) {
+      const mission = data.mission.find((m) => m.mission_id === pms.mission_id);
+      // Check if this mission is already added for this person to avoid duplicates
+      // (A person might have the same role on multiple shifts for the same mission)
+      if (
+        mission &&
+        !acc[personId].missions.some(
+          (m) => m.mission_name === mission.mission_name
+        )
+      ) {
+        acc[personId].missions.push({
+          mission_name: mission.mission_name || "Unknown Mission",
+          assignment_note: pms.assignment_note, // Keep original note casing if needed
+        });
+      }
+    }
+
+    return acc;
+  }, {} as Record<number, RolePersonInfo>);
+
+  // Sort people by last name, then first name
+  return Object.values(peopleInRole).sort((a, b) => {
+    const lastNameComparison = a.person.last_name.localeCompare(
+      b.person.last_name
+    );
+    if (lastNameComparison !== 0) {
+      return lastNameComparison;
+    }
+    return a.person.first_name.localeCompare(b.person.first_name);
+  });
+};
+
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMission, setSelectedMission] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"search" | "mission" | "person">(
-    "search"
-  );
+  const [viewMode, setViewMode] = useState<
+    "search" | "mission" | "person" | "role"
+  >("search"); // Add 'role'
   const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
   const [selectedShifts, setSelectedShifts] = useState<number[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null); // Add selectedRole state
 
   // Get sorted missions by launch date
   const sortedMissions = [...data.mission].sort((a, b) => {
@@ -170,6 +230,24 @@ function App() {
         person.first_name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   });
+
+  // Get unique roles using useMemo
+  const uniqueRoles = useMemo(() => {
+    const roles = new Set<string>();
+    data.person_mission_shift.forEach((pms) => {
+      if (pms.assignment_note) {
+        // Basic normalization: trim whitespace and convert to title case for consistency
+        const normalizedRole = pms.assignment_note
+          .trim()
+          .toLowerCase()
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        roles.add(normalizedRole);
+      }
+    });
+    return Array.from(roles).sort();
+  }, []); // Empty dependency array means this runs once
 
   // Effect to handle initializing selected shifts when mission view loads
   useEffect(() => {
@@ -425,6 +503,60 @@ function App() {
     );
   };
 
+  // Render details for a selected role
+  const renderRoleDetails = () => {
+    if (!selectedRole) return null;
+
+    const peopleInRole = getPeopleByRole(selectedRole, data);
+
+    return (
+      <div className="role-details">
+        <button
+          className="back-button"
+          onClick={() => {
+            setViewMode("search");
+            setSelectedRole(null);
+          }}
+        >
+          ← Back to Search
+        </button>
+
+        <h2>{selectedRole}</h2>
+        <p>Total personnel found: {peopleInRole.length}</p>
+
+        <div className="people-list">
+          {" "}
+          {/* Reuse people-list for layout */}
+          {peopleInRole.map((pr) => (
+            <div
+              key={pr.person.person_id}
+              className="person-card" // Reuse person-card style
+              onClick={() => {
+                setSelectedPerson(pr.person.person_id);
+                setViewMode("person");
+              }}
+            >
+              <h4>
+                {pr.person.first_name} {pr.person.last_name}
+              </h4>
+              {/* List missions where the person held this role */}
+              {pr.missions.length > 0 && (
+                <div className="role-mission-list">
+                  <p>Missions as {selectedRole}:</p>
+                  <ul>
+                    {pr.missions.map((missionInfo, index) => (
+                      <li key={index}>{missionInfo.mission_name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Render search results
   const renderSearchResults = () => {
     return (
@@ -432,9 +564,11 @@ function App() {
         {searchTerm && (
           <>
             <div className="results-section">
+              {/* Show full count */}
               <h3>People ({filteredPeople.length})</h3>
               <div className="result-grid">
-                {filteredPeople.slice(0, 50).map((person) => (
+                {/* Remove slice */}
+                {filteredPeople.map((person) => (
                   <div
                     key={person.person_id}
                     className="result-card"
@@ -448,18 +582,16 @@ function App() {
                     </span>
                   </div>
                 ))}
-                {filteredPeople.length > 50 && (
-                  <div className="more-results">
-                    + {filteredPeople.length - 50} more results
-                  </div>
-                )}
+                {/* Remove more results indicator */}
               </div>
             </div>
 
             <div className="results-section">
+              {/* Show full count */}
               <h3>Missions ({filteredMissions.length})</h3>
               <div className="result-grid">
-                {filteredMissions.slice(0, 20).map((mission) => (
+                {/* Remove slice */}
+                {filteredMissions.map((mission) => (
                   <div
                     key={mission.mission_id}
                     className="result-card mission-result"
@@ -474,40 +606,62 @@ function App() {
                     )}
                   </div>
                 ))}
-                {filteredMissions.length > 20 && (
-                  <div className="more-results">
-                    + {filteredMissions.length - 20} more results
-                  </div>
-                )}
+                {/* Remove more results indicator */}
               </div>
             </div>
           </>
         )}
 
         {!searchTerm && (
-          <div className="browse-missions">
-            <h3>Browse Missions</h3>
-            <div className="mission-timeline">
-              {sortedMissions.map((mission) => (
-                <div
-                  key={mission.mission_id}
-                  className="mission-item"
-                  onClick={() => {
-                    setSelectedMission(mission.mission_id);
-                    setViewMode("mission");
-                  }}
-                >
-                  <div className="mission-dot"></div>
-                  <div className="mission-label">
-                    <span className="mission-name">{mission.mission_name}</span>
-                    {mission.launch_date && (
-                      <span className="launch-date">{mission.launch_date}</span>
-                    )}
+          <>
+            {" "}
+            {/* Wrap multiple sections */}
+            <div className="browse-missions">
+              <h3>Browse Missions</h3>
+              <div className="mission-timeline">
+                {sortedMissions.map((mission) => (
+                  <div
+                    key={mission.mission_id}
+                    className="mission-item"
+                    onClick={() => {
+                      setSelectedMission(mission.mission_id);
+                      setViewMode("mission");
+                    }}
+                  >
+                    <div className="mission-dot"></div>
+                    <div className="mission-label">
+                      <span className="mission-name">
+                        {mission.mission_name}
+                      </span>
+                      {mission.launch_date && (
+                        <span className="launch-date">
+                          {mission.launch_date}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+            {/* Add Browse by Role section */}
+            <div className="browse-roles">
+              <h3>Browse by Role ({uniqueRoles.length})</h3>
+              <div className="role-list">
+                {uniqueRoles.map((role) => (
+                  <div
+                    key={role}
+                    className="role-item" // Use a new class for styling
+                    onClick={() => {
+                      setSelectedRole(role);
+                      setViewMode("role");
+                    }}
+                  >
+                    {role}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
     );
@@ -521,7 +675,6 @@ function App() {
           Explore the people behind NASA's missions from Gemini to Shuttle
         </p>
       </header>
-
       {viewMode === "search" && (
         <div className="search-container">
           {/* Wrap input and button for positioning */}
@@ -555,10 +708,10 @@ function App() {
           {renderSearchResults()}
         </div>
       )}
-
       {viewMode === "mission" && renderMissionDetails()}
-
       {viewMode === "person" && renderPersonDetails()}
+      {viewMode === "role" && renderRoleDetails()}{" "}
+      {/* Add role view rendering */}
     </div>
   );
 }
