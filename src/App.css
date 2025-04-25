@@ -1,0 +1,394 @@
+:root {
+  --primary-color: #0b3d91; /* NASA blue */
+  --secondary-color: #fc3d21; /* NASA red */
+  --text-color: #333;
+  --background-color: #f6f6f6;
+  --card-background: #fff;
+  --border-radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-y: scroll; /* Always show vertical scrollbar */
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-container {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  margin-bottom: 40px;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: #555;
+  font-size: 1.1rem;
+  margin-top: 0;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Add container for positioning the clear button */
+.search-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 18px;
+  border: 2px solid #ddd;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+  padding-right: 40px; /* Add padding to the right to make space for the button */
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* Style the clear button */
+.clear-button {
+  position: absolute;
+  right: 10px;
+  top: 45%; /* Adjusted slightly for better visual centering */
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.8rem; /* Increased size */
+  color: #666; /* Darker color */
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+  user-select: none;
+}
+
+.clear-button:hover {
+  color: #fff; /* Even darker on hover */
+}
+
+/* Remove focus outline when button is clicked or tabbed to */
+.clear-button:focus {
+  outline: none;
+}
+
+.search-stats {
+  color: #666;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.results-section {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.results-section h3 {
+  color: var(--primary-color);
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.result-card {
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  padding: 15px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.result-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mission-result {
+  display: flex;
+  flex-direction: column;
+}
+
+.mission-name {
+  font-weight: 600;
+}
+
+.launch-date {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.more-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 10px;
+  color: #666;
+  font-style: italic;
+}
+
+.browse-missions {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.browse-missions h3 {
+  color: var(--primary-color);
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.mission-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.mission-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.mission-item:hover {
+  transform: translateY(-3px);
+}
+
+.mission-dot {
+  width: 12px;
+  height: 12px;
+  background-color: var(--secondary-color);
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.mission-label {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Person and Mission Detail Pages */
+.person-details,
+.mission-details {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 25px;
+  box-shadow: var(--shadow);
+}
+
+.back-button {
+  background-color: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.back-button:hover {
+  transform: translateX(-3px);
+}
+
+.person-details h2,
+.mission-details h2 {
+  color: var(--primary-color);
+  margin-bottom: 5px;
+}
+
+.mission-date,
+.mission-code {
+  color: #555;
+  margin-top: 0;
+}
+
+.mission-source {
+  font-size: 0.85rem;
+  color: #777;
+  font-style: italic;
+}
+
+.mission-list,
+.people-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 5px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure the mission detail cards don't constrain the grid flow */
+.mission-card,
+.person-card {
+  background-color: #cfcfcf;
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.person-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mission-card h4,
+.person-card h4 {
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 1.2rem;
+}
+
+.assignment-list {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.assignment-list li {
+  margin-bottom: 8px;
+}
+
+.small-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  margin-top: auto;
+}
+
+.small-button:hover {
+  background-color: #0a2c6b;
+}
+
+.shift-filter {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.shift-filter p {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.shift-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.shift-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+}
+
+.shift-checkbox:hover {
+  background-color: #e6e6e6;
+}
+
+.shift-checkbox input {
+  margin-right: 6px;
+}
+
+.shift-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.shift-filter-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.filter-button:hover {
+  background-color: #0a2c6b;
+}
